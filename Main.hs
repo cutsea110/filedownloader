@@ -46,21 +46,21 @@ search t q p = do
   let (utf8str, utf8text) = (BL.pack str, fromLazy $ decodeUtf8 utf8str)
   return $ parseOnly urls utf8text
 
-getFileName :: URL -> FILENAME
-getFileName = urlDecode . unEscapeString . last . splitOn "/"
+fileName :: URL -> FILENAME
+fileName = urlDecode . unEscapeString . last . splitOn "/"
 
 download :: URL -> IO ()
 download url = do
   req <- parseUrl url
   withManager $ \manager -> do
     res <- http req manager
-    responseBody res C.$$+- sinkFile (getFileName url)
+    responseBody res C.$$+- sinkFile (fileName url)
 
 debug :: URL -> IO ()
 debug url = do
   putStr url
   putStr "  ==>  "
-  putStrLn $ getFileName url
+  putStrLn $ fileName url
 
 main :: IO ()
 main = do
