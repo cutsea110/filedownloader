@@ -37,7 +37,7 @@ between s e = manyTill anyChar (try $ string s) >> manyTill anyChar (try $ strin
 urls :: Parser [URL]
 urls = many' url
 url :: Parser URL
-url = between "<a href=\"/url?q=" "&amp;"
+url = between "<h3 class=\"r\"><a href=\"/url?q=" "&amp;"
 
 search :: FILETYPE -> QUERY -> PAGE -> IO (Either String [URL])
 search t q p = do
