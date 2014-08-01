@@ -20,6 +20,6 @@ executable filedownloader
   main-is:             Main.hs
   -- other-modules:       
   other-extensions:    OverloadedStrings
-  build-depends:       base >=4.6 && <4.7, attoparsec >=0.10 && <0.11, bytestring >=0.10 && <0.11, text >=0.11 && <0.12, HTTP >=4000.2 && <4000.3
+  build-depends:       base >=4.6 && <4.7, attoparsec >=0.10 && <0.11, bytestring >=0.10 && <0.11, text >=0.11 && <0.12, HTTP >=4000.2 && <4000.3, conduit >=1.1 && <1.2, http-conduit >=2.1 && <2.2, conduit-extra >=1.1 && <1.2, split >=0.2 && <0.3
   -- hs-source-dirs:      
   default-language:    Haskell2010

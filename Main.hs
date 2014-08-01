@@ -3,6 +3,10 @@ module Main where
 
 import Data.Attoparsec.Text (parseOnly, many', string, try, Parser, manyTill, anyChar)
 import qualified Data.ByteString.Lazy.Char8 as BL
+import Data.Conduit.Binary (sinkFile)
+import Data.List.Split (splitOn)
+import Network.HTTP.Conduit
+import qualified Data.Conduit as C
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Lazy.Encoding (decodeUtf8)
@@ -28,10 +32,25 @@ urls = many' url
 url :: Parser String
 url = between "<a href=\"/url?q=" "&amp;"
 
+search :: String -> String -> Int -> IO (Either String [String])
+search t q p = do
+  rsp <- simpleHTTP $ getRequest $ mkQuery t q p
+  str <- getResponseBody rsp
+  let (utf8str, utf8text) = (BL.pack str, fromLazy $ decodeUtf8 utf8str)
+  return $ parseOnly urls utf8text
+
+getFileName :: String -> String
+getFileName = last . splitOn "/"
+
+download :: String -> IO ()
+download url = do
+  let fname = getFileName url
+  req <- parseUrl url
+  withManager $ \manager -> do
+    res <- http req manager
+    responseBody res C.$$+- sinkFile fname
+
 main :: IO ()
 main = do
   (t:q:ps) <- getArgs
-  rsp <- simpleHTTP $ getRequest $ mkQuery t q (if length ps == 0 then 0 else read (head ps) - 1)
-  str <- getResponseBody rsp
-  let (utf8str, utf8text) = (BL.pack str, fromLazy $ decodeUtf8 utf8str)
-  either putStr (mapM_ putStrLn) $ parseOnly urls utf8text
+  either putStr (mapM_ download) =<< search t q (if length ps == 0 then 0 else read (head ps) - 1)
