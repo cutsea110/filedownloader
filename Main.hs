@@ -12,7 +12,8 @@ import qualified Data.Text as T
 import Data.Text.Lazy.Encoding (decodeUtf8)
 import qualified Data.Text.Lazy as TL
 import Network.HTTP (simpleHTTP, getRequest, getResponseBody)
-import Network.HTTP.Base
+import Network.HTTP.Base (urlEncode, urlDecode)
+import Network.URI (unEscapeString)
 import System.Environment (getArgs)
 
 type URL = String
@@ -46,17 +47,23 @@ search t q p = do
   return $ parseOnly urls utf8text
 
 getFileName :: URL -> FILENAME
-getFileName = last . splitOn "/"
+getFileName = urlDecode . unEscapeString . last . splitOn "/"
 
 download :: URL -> IO ()
 download url = do
-  let fname = getFileName url
   req <- parseUrl url
   withManager $ \manager -> do
     res <- http req manager
-    responseBody res C.$$+- sinkFile fname
+    responseBody res C.$$+- sinkFile (getFileName url)
+
+debug :: URL -> IO ()
+debug url = do
+  putStr url
+  putStr "  ==>  "
+  putStrLn $ getFileName url
 
 main :: IO ()
 main = do
   (t:q:ps) <- getArgs
-  either putStr (mapM_ download) =<< search t q (if length ps == 0 then 0 else read (head ps) - 1)
+  let p = if length ps == 0 then 0 else read (head ps) - 1
+  either putStr (mapM_ debug) =<< search t q p
