@@ -15,7 +15,13 @@ import Network.HTTP (simpleHTTP, getRequest, getResponseBody)
 import Network.HTTP.Base
 import System.Environment (getArgs)
 
-mkQuery :: String -> String -> Int -> String
+type URL = String
+type FILETYPE = String
+type QUERY = String
+type PAGE = Int
+type FILENAME = String
+
+mkQuery :: FILETYPE -> QUERY -> PAGE -> URL
 mkQuery t q p = "http://www.google.com/search?q=" ++
                 urlEncode ("filetype:" ++ t ++ " " ++ q) ++
                 "&ie=UTF-8&oe=UTF-8&num=" ++ show num ++
@@ -25,24 +31,24 @@ mkQuery t q p = "http://www.google.com/search?q=" ++
 fromLazy :: TL.Text -> Text
 fromLazy = T.pack . TL.unpack
 
-between :: Text -> Text -> Parser String
+between :: Text -> Text -> Parser URL
 between s e = manyTill anyChar (try $ string s) >> manyTill anyChar (try $ string e)
-urls :: Parser [String]
+urls :: Parser [URL]
 urls = many' url
-url :: Parser String
+url :: Parser URL
 url = between "<a href=\"/url?q=" "&amp;"
 
-search :: String -> String -> Int -> IO (Either String [String])
+search :: FILETYPE -> QUERY -> PAGE -> IO (Either String [URL])
 search t q p = do
   rsp <- simpleHTTP $ getRequest $ mkQuery t q p
   str <- getResponseBody rsp
   let (utf8str, utf8text) = (BL.pack str, fromLazy $ decodeUtf8 utf8str)
   return $ parseOnly urls utf8text
 
-getFileName :: String -> String
+getFileName :: URL -> FILENAME
 getFileName = last . splitOn "/"
 
-download :: String -> IO ()
+download :: URL -> IO ()
 download url = do
   let fname = getFileName url
   req <- parseUrl url
