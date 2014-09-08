@@ -49,6 +49,8 @@ search t q p = do
 fileName :: URL -> FILENAME
 fileName = urlDecode . unEscapeString . last . splitOn "/"
 
+
+{--
 download :: URL -> IO ()
 download url = do
   req <- parseUrl url
@@ -61,9 +63,11 @@ debug url = do
   putStr url
   putStr "  ==>  "
   putStrLn $ fileName url
+--}
+
 
 main :: IO ()
 main = do
   (t:q:ps) <- getArgs
   let p = if length ps == 0 then 0 else read (head ps) - 1
-  either putStr (mapM_ debug) =<< search t q p
+  either putStr (mapM_ putStrLn) =<< search t q p
