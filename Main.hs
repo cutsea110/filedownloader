@@ -3,10 +3,7 @@ module Main where
 
 import Data.Attoparsec.Text (parseOnly, many', string, try, Parser, manyTill, anyChar)
 import qualified Data.ByteString.Lazy.Char8 as BL
-import Data.Conduit.Binary (sinkFile)
 import Data.List.Split (splitOn)
-import Network.HTTP.Conduit
-import qualified Data.Conduit as C
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Text.Lazy.Encoding (decodeUtf8)
